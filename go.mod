@@ -1,4 +1,4 @@
-module github.com/pion/udp
+module github.com/bobopan/pionudp
 
 go 1.14
 

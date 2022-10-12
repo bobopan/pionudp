@@ -2,7 +2,7 @@ package udp
 
 /*
 #cgo CFLAGS: -Iinclude
-#cgo LDFLAGS: -Llib/ -llibwsock32
+#cgo LDFLAGS: -Llib/ -lwsock32
 #include <stdio.h>
 #include <stdlib.h>
 #include <winsock2.h>

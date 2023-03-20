@@ -1,5 +1,5 @@
-module github.com/bobopan/pionudp
+module github.com/bobopan/pionudp/v2
 
 go 1.14
 
-require github.com/pion/transport v0.13.1
+require github.com/pion/transport/v2 v2.0.2

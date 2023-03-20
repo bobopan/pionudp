@@ -5,13 +5,15 @@ import "C"
 import (
 	"context"
 	"errors"
-	"github.com/pion/transport/deadline"
-	"github.com/pion/transport/packetio"
 	"net"
 	"sync"
 	"sync/atomic"
 	"time"
 	"unsafe"
+
+	pkgSync "github.com/bobopan/pionudp/v2/pkg/sync"
+	"github.com/pion/transport/v2/deadline"
+	"github.com/pion/transport/v2/packetio"
 )
 
 const (
@@ -38,7 +40,7 @@ type listener struct {
 
 	connLock sync.Mutex
 	conns    map[string]*Conn
-	connWG   sync.WaitGroup
+	connWG   *pkgSync.WaitGroup
 
 	readWG   sync.WaitGroup
 	errClose atomic.Value // error
@@ -123,8 +125,8 @@ func (lc *ListenConfig) Listen(network string, laddr *net.UDPAddr) (net.Listener
 		lc.Backlog = defaultListenBacklog
 	}
 
+	//conn, err := net.ListenUDP(network, laddr)
 	conn, err := NewUdp(laddr.IP.String(), laddr.Port)
-	//net.ListenUDP(network, laddr)
 	if err != nil {
 		return nil, err
 	}
@@ -141,6 +143,7 @@ func (lc *ListenConfig) Listen(network string, laddr *net.UDPAddr) (net.Listener
 				return &buf
 			},
 		},
+		connWG: pkgSync.NewWaitGroup(),
 	}
 
 	l.accepting.Store(true)
@@ -165,9 +168,9 @@ func Listen(network string, laddr *net.UDPAddr) (net.Listener, error) {
 }
 
 // readLoop has to tasks:
-// 1. Dispatching incoming packets to the correct Conn.
-//    It can therefore not be ended until all Conns are closed.
-// 2. Creating a new Conn when receiving from a new remote.
+//  1. Dispatching incoming packets to the correct Conn.
+//     It can therefore not be ended until all Conns are closed.
+//  2. Creating a new Conn when receiving from a new remote.
 func (l *listener) readLoop() {
 	defer l.readWG.Done()
 
@@ -184,6 +187,10 @@ func (l *listener) readLoop() {
 			return
 		}
 
+		//n, raddr, err := l.pConn.ReadFrom(*buf)
+		//if err != nil {
+		//	return
+		//}
 		raddr, err := net.ResolveUDPAddr("udp", ip)
 		conn, ok, err := l.getConn(raddr, (buf)[:n])
 		if err != nil {
@@ -279,6 +286,10 @@ func (c *Conn) Close() error {
 		} else {
 			err = nil
 		}
+
+		if errBuf := c.buffer.Close(); errBuf != nil && err == nil {
+			err = errBuf
+		}
 	})
 
 	return err
@@ -288,6 +299,7 @@ func (c *Conn) Close() error {
 func (c *Conn) LocalAddr() net.Addr {
 	raddr, _ := net.ResolveUDPAddr("udp", c.listener.pConn.Ip)
 	return raddr
+	//return c.listener.pConn.LocalAddr()
 }
 
 // RemoteAddr implements net.Conn.RemoteAddr

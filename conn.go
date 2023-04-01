@@ -11,7 +11,6 @@ import (
 	"time"
 	"unsafe"
 
-	pkgSync "github.com/bobopan/pionudp/v2/pkg/sync"
 	"github.com/pion/transport/v2/deadline"
 	"github.com/pion/transport/v2/packetio"
 )
@@ -40,7 +39,7 @@ type listener struct {
 
 	connLock sync.Mutex
 	conns    map[string]*Conn
-	connWG   *pkgSync.WaitGroup
+	connWG   *WaitGroup
 
 	readWG   sync.WaitGroup
 	errClose atomic.Value // error
@@ -143,7 +142,7 @@ func (lc *ListenConfig) Listen(network string, laddr *net.UDPAddr) (net.Listener
 				return &buf
 			},
 		},
-		connWG: pkgSync.NewWaitGroup(),
+		connWG: NewWaitGroup(),
 	}
 
 	l.accepting.Store(true)

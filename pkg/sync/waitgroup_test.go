@@ -6,7 +6,7 @@ package sync_test
 import (
 	"testing"
 
-	"github.com/pion/udp/v2/pkg/sync"
+	"github.com/bobopan/pionudp/v2/pkg/sync"
 )
 
 func testWaitGroup(t *testing.T, wg1 *sync.WaitGroup, wg2 *sync.WaitGroup) {

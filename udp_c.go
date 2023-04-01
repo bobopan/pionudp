@@ -41,7 +41,7 @@ int udp_init_pion(char *ip, int port){
 
 
 	////发送缓冲区
-	int nSendBuf=3*1024*1024;//设置为32K
+	int nSendBuf=10*1024*1024;//设置为32K
 	setsockopt(Udp,SOL_SOCKET,SO_SNDBUF,(const char*)&nSendBuf,sizeof(int));
     if (bind(Udp, (LPSOCKADDR)&ser, sizeof(ser)) == SOCKET_ERROR)
     {
